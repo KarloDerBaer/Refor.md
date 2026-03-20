@@ -1,0 +1,1307 @@
+:root {
+  --bg-color: #1a1a1a;
+  --panel-bg: #242424;
+  /* Dark paper look */
+  --text-color: #e6e6e6;
+  --ui-text-color: #999;
+  --font-text: "Lora", serif;
+  --font-ui: "Inter", sans-serif;
+  --titlebar-height: 38px;
+}
+
+:root.light-theme {
+  --bg-color: #fdfdfc;
+  --panel-bg: #f5f5f5;
+  --text-color: #2b2b2b;
+  --ui-text-color: #666;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: var(--font-text);
+  overflow: hidden;
+  /* Flex layout so toolbar can push content down */
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Custom Titlebar for Frameless Window */
+#titlebar {
+  height: var(--titlebar-height);
+  flex-shrink: 0;
+  background-color: var(--panel-bg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  -webkit-app-region: drag;
+  font-family: var(--font-ui);
+  user-select: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+#titlebar .titlebar-left,
+#titlebar .titlebar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+#titlebar .titlebar-right {
+  justify-content: flex-end;
+}
+
+#titlebar .titlebar-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex: 2;
+}
+
+#titlebar .title {
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--ui-text-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 300px;
+  display: inline-block;
+}
+
+#titlebar .app-logo {
+  display: flex;
+  align-items: center;
+  color: var(--ui-text-color);
+}
+
+#titlebar .app-logo svg {
+  width: 18px;
+  height: 18px;
+}
+
+.no-drag {
+  -webkit-app-region: no-drag;
+}
+
+/* Base Top Toolbar Items inside Titlebar */
+.toolbar-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--ui-text-color);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toolbar-btn:hover {
+  background-color: rgba(128, 128, 128, 0.1);
+  color: var(--text-color);
+}
+
+.toolbar-btn.active {
+  background-color: rgba(128, 128, 128, 0.15);
+  border-color: rgba(128, 128, 128, 0.2);
+  color: var(--text-color);
+}
+
+/* Search Bar */
+.search-bar {
+  display: flex;
+  align-items: center;
+  background-color: var(--bg-color);
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  border-radius: 12px;
+  padding: 2px 8px;
+  width: 250px;
+  transition: border-color 0.2s;
+}
+
+.search-bar:focus-within {
+  border-color: var(--ui-text-color);
+}
+
+.search-bar i {
+  color: var(--ui-text-color);
+  width: 14px;
+  height: 14px;
+}
+
+#search-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-color);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  padding-left: 6px;
+  width: 100%;
+}
+
+/* Search Highlights */
+.search-highlight {
+  background-color: rgba(255, 255, 0, 0.4);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+.search-highlight.active {
+  background-color: rgba(255, 165, 0, 0.8);
+  color: #000;
+}
+
+.window-controls-system {
+  display: flex;
+  gap: 4px;
+  margin-left: 8px;
+}
+
+.window-controls-system button {
+  background: transparent;
+  border: none;
+  color: var(--ui-text-color);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.window-controls-system button:hover {
+  background: rgba(128, 128, 128, 0.1);
+}
+
+#btn-close:hover {
+  background: #e81123;
+  color: white;
+}
+
+/* Formatting Toolbar (3.4) */
+.format-toolbar {
+  height: 34px;
+  background-color: var(--panel-bg);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 2px;
+  flex-shrink: 0;
+  z-index: 500;
+  position: relative;
+}
+
+.format-toolbar.hidden {
+  display: none;
+}
+
+/* Toolbar inside RAW mode pane (under breadcrumb bar) */
+.format-toolbar.toolbar-raw {
+  height: auto;
+  padding: 4px 8px;
+  border-top: none;
+}
+
+/* Inline toolbar inside block editor */
+.format-toolbar.toolbar-inline {
+  height: auto;
+  padding: 4px 8px;
+  background: var(--bg-color);
+  border: 2px solid rgba(100, 149, 237, 0.5);
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  z-index: 10;
+}
+
+.format-toolbar button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--ui-text-color);
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: all 0.15s;
+  min-width: 28px;
+  height: 26px;
+}
+
+.format-toolbar button:hover {
+  background-color: rgba(128, 128, 128, 0.15);
+  color: var(--text-color);
+}
+
+.format-toolbar button:active {
+  background-color: rgba(128, 128, 128, 0.25);
+}
+
+.format-toolbar button i {
+  width: 16px;
+  height: 16px;
+}
+
+.format-toolbar .fmt-text-btn {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.fmt-divider {
+  width: 1px;
+  height: 18px;
+  background-color: rgba(128, 128, 128, 0.2);
+  margin: 0 4px;
+}
+
+/* Base App Layout — fills remaining space after titlebar + optional format toolbar */
+.app-container {
+  display: flex;
+  flex: 1;
+  width: 100vw;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Left Sidebar Navigation */
+#left-sidebar {
+  width: 50px;
+  background-color: var(--panel-bg);
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  z-index: 100;
+}
+
+.sidebar-top,
+.sidebar-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--ui-text-color);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-btn:hover {
+  background-color: rgba(128, 128, 128, 0.15);
+  color: var(--text-color);
+}
+
+.icon-btn.active {
+  background-color: rgba(128, 128, 128, 0.25);
+  color: var(--text-color);
+}
+
+/* Titlebar specific icon variant */
+.title-star {
+  padding: 4px;
+}
+
+/* Dropdown Menu Popover */
+#main-menu-popover {
+  position: absolute;
+  bottom: 0;
+  left: 60px;
+  background-color: var(--panel-bg);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  width: 150px;
+  z-index: 200;
+}
+
+#main-menu-popover.hidden {
+  display: none;
+}
+
+#main-menu-popover button {
+  background: transparent;
+  border: none;
+  color: var(--text-color);
+  text-align: left;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  transition: background 0.2s;
+}
+
+#main-menu-popover button:hover {
+  background-color: rgba(128, 128, 128, 0.1);
+}
+
+/* Sidebar Flyouts (Recents / Favorites) */
+#sidebar-flyout {
+  width: 250px;
+  min-width: 0;
+  background-color: var(--panel-bg);
+  border-right: none;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s ease;
+  overflow: hidden;
+}
+
+#sidebar-flyout.hidden {
+  width: 0;
+  border-right: none;
+  overflow: hidden;
+}
+
+/* Flyout Resizer Handle */
+#flyout-resizer {
+  width: 4px;
+  cursor: col-resize;
+  background-color: transparent;
+  transition: background-color 0.2s;
+  z-index: 10;
+  flex-shrink: 0;
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+#flyout-resizer:hover,
+#flyout-resizer.is-resizing {
+  background-color: var(--ui-text-color);
+}
+
+#flyout-resizer.hidden {
+  display: none;
+}
+
+.flyout-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+#btn-close-flyout {
+  background: none;
+  border: none;
+  color: var(--ui-text-color);
+  cursor: pointer;
+}
+
+#flyout-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+}
+
+#flyout-list li {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+#flyout-list li span:first-child {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  flex: 1;
+}
+
+#flyout-list li:hover {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+/* Main Column */
+.main-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Old styles adjustments */
+.app-layout {
+  display: flex;
+  flex: 1;
+  /* take remaining height under toolbar */
+  width: 100%;
+  overflow: hidden;
+  min-height: 0;
+  /* fixes nested flex overflow bounds */
+}
+
+/* Editor Groups (VS Code-style split) */
+.editor-group {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.editor-group.hidden {
+  display: none;
+}
+
+/* Tab bar inside editor groups */
+.tab-bar-group {
+  height: 32px;
+  background-color: var(--panel-bg);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: stretch;
+  padding: 0;
+  gap: 0;
+  flex-shrink: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.tab-bar-group::-webkit-scrollbar {
+  height: 0;
+}
+
+.tab-bar-actions {
+  display: flex;
+  align-items: stretch;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* Breadcrumb path bar under each tab bar */
+.breadcrumb-bar {
+  height: 22px;
+  background-color: var(--panel-bg);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--ui-text-color);
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+#app, #app-right {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.editor-content {
+  padding: 40px;
+  max-width: 800px;
+  margin: 0 auto;
+  font-size: calc(18px * var(--zoom, 1));
+  line-height: 1.6;
+  transition:
+    max-width 0.3s ease,
+    margin 0.3s ease,
+    padding 0.3s ease,
+    background-color 0.2s ease,
+    font-size 0.15s ease;
+}
+
+/* Custom Scrollbar for App Container and Flyout Panel */
+#app::-webkit-scrollbar,
+#sidebar-flyout::-webkit-scrollbar,
+#flyout-list::-webkit-scrollbar,
+#app-right::-webkit-scrollbar {
+  width: 8px;
+  background: transparent;
+}
+
+#app::-webkit-scrollbar-track,
+#sidebar-flyout::-webkit-scrollbar-track,
+#flyout-list::-webkit-scrollbar-track,
+#app-right::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#app::-webkit-scrollbar-thumb,
+#sidebar-flyout::-webkit-scrollbar-thumb,
+#flyout-list::-webkit-scrollbar-thumb,
+#app-right::-webkit-scrollbar-thumb {
+  background-color: rgba(128, 128, 128, 0.2);
+  border-radius: 4px;
+}
+
+#app::-webkit-scrollbar-thumb:hover,
+#sidebar-flyout::-webkit-scrollbar-thumb:hover,
+#flyout-list::-webkit-scrollbar-thumb:hover,
+#app-right::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(128, 128, 128, 0.4);
+}
+
+/* Grab-to-scroll active state (only when dragging) */
+#app.grab-scrolling {
+  user-select: none;
+  cursor: grabbing;
+}
+
+#app hr {
+  border: none;
+  border-top: 1px solid rgba(128, 128, 128, 0.3);
+  margin: 24px 0;
+}
+
+/* Multi-line code block */
+#app pre {
+  display: block;
+  padding: 16px;
+  background: var(--panel-bg);
+  border-radius: 8px;
+  overflow-x: auto;
+  border: 1px solid rgba(128, 128, 128, 0.1);
+  margin: 16px 0;
+}
+
+/* Inline code formatting */
+#app code {
+  font-family: 'Inter', monospace;
+  background-color: rgba(128, 128, 128, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.95em;
+  color: var(--text-color);
+  border: 1px solid rgba(128, 128, 128, 0.2);
+}
+
+/* Remove inline code padding when inside a pre block */
+#app pre code {
+  background: transparent;
+  padding: 0;
+  border: none;
+}
+
+/* Transitions for edit mode */
+.editable-block {
+  position: relative;
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin: 4px -12px;
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+#app.app-edit-mode .editable-block {
+  cursor: text;
+}
+
+#app.app-edit-mode .editable-block:hover {
+  background-color: rgba(128, 128, 128, 0.1);
+}
+
+#btn-edit-toggle.active {
+  background-color: rgba(128, 128, 128, 0.2);
+  color: var(--text-color);
+}
+
+.inline-editor {
+  width: calc(100% + 24px);
+  margin: 4px -12px;
+  padding: 8px 12px;
+  font-family: "Inter", sans-serif;
+  /* Monospace or Inter for editing UI */
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-color);
+  background-color: var(--bg-color);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  outline: none;
+  resize: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.2s ease;
+}
+
+.inline-editor:focus {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Comment Popup Container (fixed positioned on body) */
+.comment-popup-container {
+  position: fixed;
+  z-index: 10000;
+}
+
+/* Comment Popup UI */
+.comment-popup {
+  background-color: var(--panel-bg);
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  width: 260px;
+}
+
+.comment-input {
+  width: 100%;
+  min-height: 70px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  padding: 8px;
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-radius: 4px;
+  resize: vertical;
+  outline: none;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+.comment-input:focus {
+  border-color: cornflowerblue;
+}
+
+.comment-popup-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.comment-cancel-btn,
+.comment-save-btn {
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.comment-cancel-btn {
+  background-color: transparent;
+  color: var(--ui-text-color);
+  border: 1px solid rgba(128, 128, 128, 0.3);
+}
+
+.comment-cancel-btn:hover {
+  background-color: rgba(128, 128, 128, 0.1);
+}
+
+.comment-save-btn {
+  background-color: cornflowerblue;
+  color: white;
+}
+
+.comment-save-btn:hover {
+  background-color: #5a8fd4;
+}
+
+/* Comment mode: visual hover indicator on blocks */
+#app.app-comment-mode .editable-block,
+#app-right.app-comment-mode .editable-block {
+  cursor: pointer;
+}
+
+#app.app-comment-mode .editable-block:hover,
+#app-right.app-comment-mode .editable-block:hover {
+  background-color: rgba(100, 149, 237, 0.08);
+  outline: 1px dashed rgba(100, 149, 237, 0.4);
+  outline-offset: -1px;
+}
+
+/* Inline Comments (Show Commits Toggle) */
+.inline-commit {
+  color: #e81123;
+  font-style: italic;
+  background-color: rgba(232, 17, 35, 0.1);
+  padding: 0 4px;
+  border-radius: 4px;
+  font-family: var(--font-ui);
+  font-size: 0.9em;
+  margin: 0 4px;
+}
+
+/* RAW mode active: flex layout so textarea fills the pane */
+#app.raw-mode-active,
+#app-right.raw-mode-active {
+  display: flex;
+  flex-direction: column;
+  overflow-y: hidden;
+}
+
+/* RAW View Textarea (per-pane raw mode) */
+.raw-view-textarea {
+  flex: 1;
+  background: transparent;
+  color: var(--text-color);
+  font-family: 'Inter', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  border: none;
+  outline: none;
+  padding: 24px 40px;
+  resize: none;
+  width: 100%;
+  min-height: 0;
+}
+
+.raw-view-textarea:read-only {
+  opacity: 0.85;
+}
+
+.raw-view-textarea::-webkit-scrollbar {
+  width: 8px;
+  background: transparent;
+}
+
+.raw-view-textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.raw-view-textarea::-webkit-scrollbar-thumb {
+  background-color: rgba(128, 128, 128, 0.2);
+  border-radius: 4px;
+}
+
+.raw-view-textarea::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(128, 128, 128, 0.4);
+}
+
+.resizer {
+  width: 4px;
+  cursor: col-resize;
+  background-color: transparent;
+  transition: background-color 0.2s;
+  z-index: 10;
+}
+
+.resizer:hover,
+.resizer.is-resizing {
+  background-color: var(--ui-text-color);
+}
+
+.resizer.hidden {
+  display: none;
+}
+
+/* Active state for tab-bar RAW button */
+.tab-add-btn.active {
+  background-color: rgba(128, 128, 128, 0.2);
+  color: var(--text-color);
+}
+
+/* Add content button in edit mode */
+.add-block-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  height: 0;
+  opacity: 0;
+  overflow: visible;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  position: relative;
+  z-index: 10;
+}
+
+#app.app-edit-mode .add-block-btn {
+  height: 20px;
+  pointer-events: auto;
+}
+
+#app.app-edit-mode .add-block-btn:hover {
+  opacity: 1;
+}
+
+.add-block-btn button {
+  background: var(--bg-color);
+  border: 1px solid rgba(128, 128, 128, 0.4);
+  color: var(--ui-text-color);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0;
+}
+
+.add-block-btn button i {
+  width: 14px;
+  height: 14px;
+}
+
+.add-block-btn button:hover {
+  color: var(--text-color);
+  border-color: var(--text-color);
+}
+
+/* Drag active visual feedback */
+body.drag-active::after {
+  content: "Drop file here";
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-ui);
+  font-size: 18px;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+/* Status Bar (word/char count) */
+#status-bar {
+  height: 24px;
+  background-color: var(--panel-bg);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 16px;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--ui-text-color);
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+#status-bar .status-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Search match counter */
+.search-counter {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--ui-text-color);
+  white-space: nowrap;
+  min-width: 60px;
+  text-align: right;
+}
+
+/* Toast Notifications */
+#toast-container {
+  position: fixed;
+  bottom: 40px;
+  right: 16px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
+  background-color: var(--panel-bg);
+  color: var(--text-color);
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  animation: toast-in 0.3s ease, toast-out 0.3s ease 2.7s forwards;
+  pointer-events: auto;
+}
+
+.toast.toast-error {
+  border-color: #e81123;
+  color: #e81123;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes toast-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(10px); }
+}
+
+/* Block Editor UX Improvements (2.5) */
+.inline-editor-wrapper {
+  position: relative;
+  margin: 4px -12px;
+}
+
+.inline-editor-wrapper .inline-editor {
+  margin: 0;
+  width: 100%;
+  border: 2px solid rgba(100, 149, 237, 0.5);
+  border-radius: 0 0 4px 4px;
+}
+
+.inline-editor-wrapper .inline-editor:focus {
+  border-color: rgba(100, 149, 237, 0.8);
+  box-shadow: 0 4px 16px rgba(100, 149, 237, 0.15);
+}
+
+.inline-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 4px 0;
+}
+
+.inline-editor-actions button {
+  background: var(--panel-bg);
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  color: var(--ui-text-color);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.inline-editor-actions button:hover {
+  background-color: rgba(128, 128, 128, 0.15);
+  color: var(--text-color);
+}
+
+.inline-editor-actions .btn-save-block {
+  background-color: rgba(100, 149, 237, 0.15);
+  border-color: rgba(100, 149, 237, 0.3);
+  color: cornflowerblue;
+}
+
+.inline-editor-actions .btn-save-block:hover {
+  background-color: rgba(100, 149, 237, 0.25);
+}
+
+/* TOC flyout items (3.7) */
+#flyout-list li.toc-item {
+  cursor: pointer;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+#flyout-list li.toc-item:hover {
+  background-color: rgba(128, 128, 128, 0.1);
+}
+
+#flyout-list li.toc-h1 { padding-left: 16px; font-weight: 600; font-size: 14px; }
+#flyout-list li.toc-h2 { padding-left: 28px; font-weight: 500; font-size: 13px; }
+#flyout-list li.toc-h3 { padding-left: 40px; font-weight: 400; font-size: 12px; color: var(--ui-text-color); }
+#flyout-list li.toc-h4 { padding-left: 52px; font-weight: 400; font-size: 12px; color: var(--ui-text-color); }
+#flyout-list li.toc-h5 { padding-left: 64px; font-weight: 400; font-size: 11px; color: var(--ui-text-color); }
+#flyout-list li.toc-h6 { padding-left: 76px; font-weight: 400; font-size: 11px; color: var(--ui-text-color); }
+
+/* Tab Bar (3.6) — now using .tab-bar-group class on editor groups */
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  background: transparent;
+  border: none;
+  border-right: 1px solid rgba(0, 0, 0, 0.05);
+  color: var(--ui-text-color);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  max-width: 180px;
+  min-width: 0;
+  transition: background-color 0.15s;
+}
+
+.tab:hover {
+  background-color: rgba(128, 128, 128, 0.1);
+}
+
+.tab.active {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+/* Focused pane indicator: thin blue top border on active tab */
+.tab-bar-group.pane-focused .tab.active {
+  box-shadow: inset 0 2px 0 cornflowerblue;
+}
+
+.tab .tab-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tab .tab-dirty {
+  color: var(--ui-text-color);
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.tab .tab-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s;
+  background: transparent;
+  border: none;
+  color: var(--ui-text-color);
+  cursor: pointer;
+  padding: 0;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.tab:hover .tab-close {
+  opacity: 1;
+}
+
+.tab .tab-close:hover {
+  background-color: rgba(128, 128, 128, 0.2);
+  color: var(--text-color);
+}
+
+.tab-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--ui-text-color);
+  cursor: pointer;
+  padding: 0 8px;
+  flex-shrink: 0;
+}
+
+.tab-add-btn:hover {
+  background-color: rgba(128, 128, 128, 0.1);
+  color: var(--text-color);
+}
+
+.tab-add-btn i {
+  width: 14px;
+  height: 14px;
+}
+
+/* Tab drag & drop */
+.tab.dragging {
+  opacity: 0.4;
+}
+
+.tab-bar-group.drag-over {
+  background-color: rgba(100, 149, 237, 0.1);
+}
+
+/* Edit mode styles for right pane (mirror left pane) */
+#app-right.app-edit-mode .editable-block {
+  cursor: text;
+}
+
+#app-right.app-edit-mode .editable-block:hover {
+  background-color: rgba(128, 128, 128, 0.1);
+}
+
+#app-right.app-edit-mode .add-block-btn {
+  display: flex;
+  height: 20px;
+  pointer-events: auto;
+}
+
+#app-right.app-edit-mode .add-block-btn:hover {
+  opacity: 1;
+}
+
+/* Split View — right pane content */
+#app-right .editor-content {
+  padding: 40px;
+  max-width: 800px;
+  margin: 0 auto;
+  font-size: calc(18px * var(--zoom, 1));
+  line-height: 1.6;
+}
+
+/* Reuse editor-content styles in right pane */
+#app-right pre {
+  display: block;
+  padding: 16px;
+  background: var(--panel-bg);
+  border-radius: 8px;
+  overflow-x: auto;
+  border: 1px solid rgba(128, 128, 128, 0.1);
+  margin: 16px 0;
+}
+
+#app-right code {
+  font-family: 'Inter', monospace;
+  background-color: rgba(128, 128, 128, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.95em;
+  color: var(--text-color);
+  border: 1px solid rgba(128, 128, 128, 0.2);
+}
+
+#app-right pre code {
+  background: transparent;
+  padding: 0;
+  border: none;
+}
+
+#app-right hr {
+  border: none;
+  border-top: 1px solid rgba(128, 128, 128, 0.3);
+  margin: 24px 0;
+}
+
+/* Default: hide edit-mode UI in right pane unless edit mode is active */
+#app-right:not(.app-edit-mode) .add-block-btn {
+  display: none;
+}
+
+#app-right:not(.app-edit-mode) .editable-block {
+  cursor: default;
+}
+
+/* Border between left and right editor groups */
+#editor-group-right {
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Emoji Picker */
+.emoji-picker {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: var(--panel-bg);
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 600;
+  padding: 8px;
+  width: 320px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.emoji-picker.hidden {
+  display: none;
+}
+
+.emoji-picker::-webkit-scrollbar {
+  width: 6px;
+  background: transparent;
+}
+
+.emoji-picker::-webkit-scrollbar-thumb {
+  background-color: rgba(128, 128, 128, 0.2);
+  border-radius: 3px;
+}
+
+.emoji-category-label {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ui-text-color);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 4px 2px;
+  margin-top: 4px;
+}
+
+.emoji-category-label:first-child {
+  margin-top: 0;
+}
+
+.emoji-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.emoji-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  padding: 0;
+}
+
+.emoji-btn:hover {
+  background-color: rgba(128, 128, 128, 0.15);
+}
+
+.emoji-btn[title] {
+  position: relative;
+}
+
+/* Zoom status clickable */
+#status-zoom {
+  cursor: pointer;
+  user-select: none;
+}
+
+#status-zoom:hover {
+  color: var(--text-color);
+}

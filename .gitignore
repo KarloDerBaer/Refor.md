@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+out/
+release/
+
+# Logs
+error.log
+*.log
+
+# OS artifacts
+nul
+Thumbs.db
+.DS_Store
+
+# IDE / Editor
+.claude/
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
