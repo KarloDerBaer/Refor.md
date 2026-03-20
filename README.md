@@ -11,6 +11,12 @@ A Markdown editor focused on the essentials: reading, commenting, and refining d
 
 ---
 
+<p align="center">
+  <img src="screenshots/screenshot_1.jpg" alt="refor.md Screenshot" width="800">
+</p>
+
+---
+
 ## ✨ Features
 
 - 📝 **Block Editor** — Click on a paragraph to edit it (Ctrl+E)
