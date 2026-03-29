@@ -41,6 +41,12 @@ window.lucide = {
   }
 };
 
+// --- Version Display ---
+const menuVersion = document.getElementById("menu-version");
+if (menuVersion) {
+  menuVersion.textContent = `v${__APP_VERSION__}`;
+}
+
 // --- Toast Notification System (2.7) ---
 function showToast(message, type = 'info') {
   const container = document.getElementById('toast-container');

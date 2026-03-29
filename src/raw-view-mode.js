@@ -66,6 +66,11 @@ export class RawViewMode {
   }
 
   _showLeftRaw() {
+    // Capture scroll percentage from rendered view before hiding
+    const scrollRatio = this.appDiv.scrollHeight > this.appDiv.clientHeight
+      ? this.appDiv.scrollTop / (this.appDiv.scrollHeight - this.appDiv.clientHeight)
+      : 0;
+
     // Hide rendered content
     const editorContent = this.appDiv.querySelector('.editor-content');
     if (editorContent) editorContent.style.display = 'none';
@@ -92,6 +97,15 @@ export class RawViewMode {
     this.leftTextarea.addEventListener('input', this._leftDebouncedSync);
 
     this.appDiv.appendChild(this.leftTextarea);
+
+    // Restore scroll position proportionally
+    requestAnimationFrame(() => {
+      if (this.leftTextarea) {
+        const maxScroll = this.leftTextarea.scrollHeight - this.leftTextarea.clientHeight;
+        this.leftTextarea.scrollTop = Math.round(scrollRatio * maxScroll);
+      }
+    });
+
     this.leftTextarea.focus();
   }
 
@@ -99,7 +113,11 @@ export class RawViewMode {
     // Flush pending changes
     if (this._leftDebouncedSync) this._leftDebouncedSync.flush();
 
+    // Capture scroll percentage from textarea before removing
+    let scrollRatio = 0;
     if (this.leftTextarea) {
+      const maxScroll = this.leftTextarea.scrollHeight - this.leftTextarea.clientHeight;
+      scrollRatio = maxScroll > 0 ? this.leftTextarea.scrollTop / maxScroll : 0;
       this.leftTextarea.remove();
       this.leftTextarea = null;
       this._leftDebouncedSync = null;
@@ -119,6 +137,12 @@ export class RawViewMode {
 
     // Trigger re-render to show updated content
     this.stateManager.triggerRender();
+
+    // Restore scroll position proportionally
+    requestAnimationFrame(() => {
+      const maxScroll = this.appDiv.scrollHeight - this.appDiv.clientHeight;
+      this.appDiv.scrollTop = Math.round(scrollRatio * maxScroll);
+    });
   }
 
   /**
@@ -182,8 +206,21 @@ export class RawViewMode {
     }, 300);
     this.rightTextarea.addEventListener('input', this._rightDebouncedSync);
 
+    // Capture scroll percentage from rendered view
+    const scrollRatio = this.appRight.scrollHeight > this.appRight.clientHeight
+      ? this.appRight.scrollTop / (this.appRight.scrollHeight - this.appRight.clientHeight)
+      : 0;
+
     this._updateRightTextareaContent();
     this.appRight.appendChild(this.rightTextarea);
+
+    // Restore scroll position proportionally
+    requestAnimationFrame(() => {
+      if (this.rightTextarea) {
+        const maxScroll = this.rightTextarea.scrollHeight - this.rightTextarea.clientHeight;
+        this.rightTextarea.scrollTop = Math.round(scrollRatio * maxScroll);
+      }
+    });
 
     if (isFocused) this.rightTextarea.focus();
   }

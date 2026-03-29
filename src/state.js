@@ -2,6 +2,56 @@ import { parseMarkdown } from "./markdown.js";
 
 const MAX_UNDO_HISTORY = 50;
 
+/**
+ * Collapse 3+ consecutive newlines to exactly 2 (one blank line).
+ * Preserves content inside fenced code blocks (``` ... ```).
+ */
+function normalizeWhitespace(markdown) {
+  const lines = markdown.split('\n');
+  const result = [];
+  let inCodeBlock = false;
+
+  for (const line of lines) {
+    if (line.trimStart().startsWith('```')) {
+      inCodeBlock = !inCodeBlock;
+    }
+    result.push(line);
+  }
+
+  // Rebuild, collapsing runs of blank lines outside code blocks
+  let output = '';
+  let consecutiveEmpty = 0;
+  inCodeBlock = false;
+
+  for (const line of result) {
+    if (line.trimStart().startsWith('```')) {
+      inCodeBlock = !inCodeBlock;
+      consecutiveEmpty = 0;
+      output += line + '\n';
+      continue;
+    }
+
+    if (inCodeBlock) {
+      output += line + '\n';
+      consecutiveEmpty = 0;
+      continue;
+    }
+
+    if (line.trim() === '') {
+      consecutiveEmpty++;
+      // Allow at most 1 blank line (= 2 consecutive newlines)
+      if (consecutiveEmpty <= 1) {
+        output += '\n';
+      }
+    } else {
+      consecutiveEmpty = 0;
+      output += line + '\n';
+    }
+  }
+
+  return output.replace(/\n+$/, '\n');
+}
+
 class StateManager {
   constructor(initialMarkdown, renderCallback) {
     this._rawMarkdown = initialMarkdown;
@@ -43,8 +93,9 @@ class StateManager {
   }
 
   markClean(markdown) {
-    this._savedMarkdown = markdown;
-    this._rawMarkdown = markdown;
+    const normalized = normalizeWhitespace(markdown);
+    this._savedMarkdown = normalized;
+    this._rawMarkdown = normalized;
     this._dirty = false;
     if (this._onDirtyChange) this._onDirtyChange(false);
   }
@@ -141,8 +192,10 @@ class StateManager {
       if (i === id) {
         newMarkdown += newText + "\n\n";
       } else {
-        newMarkdown += this.tokens[i].raw + "\n";
-        if (!this.tokens[i].raw.endsWith("\n")) {
+        // Use raw text as-is; it already contains trailing whitespace from the lexer
+        newMarkdown += this.tokens[i].raw;
+        // Only ensure at least one newline after non-space tokens that don't end with one
+        if (this.tokens[i].type !== 'space' && !this.tokens[i].raw.endsWith("\n")) {
           newMarkdown += "\n";
         }
       }
@@ -156,8 +209,9 @@ class StateManager {
     let newMarkdown = "";
 
     for (let i = 0; i < this.tokens.length; i++) {
-      newMarkdown += this.tokens[i].raw + "\n";
-      if (!this.tokens[i].raw.endsWith("\n")) {
+      // Use raw text as-is; it already contains trailing whitespace from the lexer
+      newMarkdown += this.tokens[i].raw;
+      if (this.tokens[i].type !== 'space' && !this.tokens[i].raw.endsWith("\n")) {
         newMarkdown += "\n";
       }
       if (i === id) {

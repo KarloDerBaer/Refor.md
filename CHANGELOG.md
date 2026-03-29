@@ -1,6 +1,23 @@
 # Changelog
 
 
+## 1.0.1 (2026-03-23)
+
+
+### Bug Fixes
+
+- **Raw mode scroll**: Preserve scroll position when toggling between rendered and raw view
+- **Whitespace accumulation**: Fix `updateBlock`/`insertBlock` adding extra blank lines on each edit
+- **Whitespace cleanup**: Auto-normalize excessive blank lines when loading files
+- **Multi-line comments**: Render multi-line `<!-- -->` and legacy `<span>` comments as single styled blocks
+- **Toggle comments**: Also hide/show legacy `<span class="inline-commit">` comments
+
+### Features
+
+- **Edit comments**: Click existing comments in comment mode to edit or delete them
+- **Version display**: Show installed version in the menu
+
+
 ## 1.0.0 (2026-03-20)
 
 

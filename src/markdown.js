@@ -57,9 +57,23 @@ marked.setOptions({
 });
 
 export const parseMarkdown = (rawMarkdown, showCommits = false) => {
-  // Preprocess HTML comments if showCommits is active
+  // Preprocess comments for visibility toggle
   if (showCommits) {
-    rawMarkdown = rawMarkdown.replace(/<!--([\s\S]*?)-->/g, '<span class="inline-commit">[$1]</span>');
+    // Convert HTML comments to visible spans, replacing newlines with <br> to keep
+    // multi-line comments as a single inline element (prevents marked from splitting them)
+    rawMarkdown = rawMarkdown.replace(/<!--([\s\S]*?)-->/g, (_match, content) => {
+      const safe = content.replace(/\n/g, '<br>');
+      return `<span class="inline-commit">[${safe}]</span>`;
+    });
+    // Also sanitize legacy <span class="inline-commit"> tags that already exist in the
+    // markdown source — replace newlines inside them with <br> so marked doesn't split them
+    rawMarkdown = rawMarkdown.replace(/<span\s+class="inline-commit">\[([\s\S]*?)\]<\/span>/g, (_match, content) => {
+      const safe = content.replace(/\n/g, '<br>');
+      return `<span class="inline-commit">[${safe}]</span>`;
+    });
+  } else {
+    // When commits are hidden, strip both HTML comments and legacy span tags
+    rawMarkdown = rawMarkdown.replace(/<span\s+class="inline-commit">\[[\s\S]*?\]<\/span>/g, '');
   }
 
   // Tokenize markdown to map blocks back to source text

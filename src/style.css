@@ -370,6 +370,18 @@ body {
   background-color: rgba(128, 128, 128, 0.1);
 }
 
+.menu-version {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--ui-text-color);
+  opacity: 0.5;
+  text-align: center;
+  padding: 6px 12px 2px;
+  border-top: 1px solid rgba(128, 128, 128, 0.15);
+  margin-top: 4px;
+  user-select: none;
+}
+
 /* Sidebar Flyouts (Recents / Favorites) */
 #sidebar-flyout {
   width: 250px;
@@ -740,6 +752,17 @@ body {
   background-color: #5a8fd4;
 }
 
+.comment-delete-btn {
+  background-color: rgba(232, 17, 35, 0.15);
+  color: #e81123;
+  border: 1px solid rgba(232, 17, 35, 0.3);
+  margin-right: auto; /* Push delete to the left */
+}
+
+.comment-delete-btn:hover {
+  background-color: rgba(232, 17, 35, 0.3);
+}
+
 /* Comment mode: visual hover indicator on blocks */
 #app.app-comment-mode .editable-block,
 #app-right.app-comment-mode .editable-block {
@@ -763,6 +786,18 @@ body {
   font-family: var(--font-ui);
   font-size: 0.9em;
   margin: 0 4px;
+}
+
+/* Clickable inline-commit spans in comment mode */
+#app.app-comment-mode .inline-commit,
+#app-right.app-comment-mode .inline-commit {
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+#app.app-comment-mode .inline-commit:hover,
+#app-right.app-comment-mode .inline-commit:hover {
+  background-color: rgba(232, 17, 35, 0.25);
 }
 
 /* RAW mode active: flex layout so textarea fills the pane */
