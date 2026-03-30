@@ -100,7 +100,7 @@ export const parseMarkdown = (rawMarkdown, showCommits = false) => {
 
   return {
     html: DOMPurify.sanitize(htmlResult, {
-      ADD_ATTR: ["data-block-id", "class", "data-insert-after", "data-comment-target", "data-lucide", "fill", "style", "title"],
+      ADD_ATTR: ["data-block-id", "class", "data-insert-after", "data-comment-target", "data-lucide", "fill", "style", "title", "id"],
       ADD_TAGS: ["button", "i", "span"],
       FORBID_TAGS: ["script", "iframe", "object", "embed", "form", "input", "select", "textarea"],
       FORBID_ATTR: ["onerror", "onload", "onclick", "onmouseover", "onfocus", "onblur"]

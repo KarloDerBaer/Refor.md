@@ -627,23 +627,186 @@ statusZoom.addEventListener("click", resetZoom);
 initZoom();
 
 // --- Link Following (3.12) — both panes ---
-const handleLinkClick = (e) => {
+// Determines open mode from mouse event:
+// Left click = replace, Middle click = new tab, Ctrl+Left = other panel
+const getLinkOpenMode = (e) => {
+  if (e.button === 1) return 'new-tab';
+  if (e.ctrlKey || e.metaKey) return 'other-panel';
+  return 'replace';
+};
+
+const openLinkedMdFile = (href, mode) => {
+  const currentPath = fileManager.getCurrentFilePath();
+  if (currentPath) {
+    window.electronAPI.resolvePath(currentPath, href).then(resolvedPath => {
+      if (resolvedPath && window._openWorktreeFile) {
+        window._openWorktreeFile(resolvedPath, mode);
+      }
+    });
+  } else {
+    showToast("Cannot resolve relative link (no file is open).", "error");
+  }
+};
+
+const scrollToAnchor = (container, href) => {
+  const targetId = decodeURIComponent(href.slice(1));
+  let target = container.querySelector(`[id="${CSS.escape(targetId)}"]`);
+  if (!target) {
+    const allHeadings = container.querySelectorAll("h1, h2, h3, h4, h5, h6");
+    for (const el of allHeadings) {
+      const slug = el.textContent.trim().toLowerCase().replace(/[^\w]+/g, '-');
+      if (slug === targetId) { target = el; break; }
+    }
+  }
+  if (target) {
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+    target.style.transition = "background-color 0.3s";
+    target.style.backgroundColor = "rgba(100, 149, 237, 0.2)";
+    setTimeout(() => { target.style.backgroundColor = ""; }, 1500);
+  }
+};
+
+const handleLinkEvent = (e) => {
   const link = e.target.closest("a[href]");
   if (!link) return;
 
-  if (e.ctrlKey || e.metaKey) {
-    e.preventDefault();
-    e.stopPropagation();
-    const href = link.getAttribute("href");
-    if (href && (href.startsWith("http://") || href.startsWith("https://"))) {
-      window.electronAPI.openExternal(href);
-    } else {
-      showToast("Only HTTP/HTTPS links can be opened externally.", "error");
+  // Always prevent default navigation to avoid app freeze
+  e.preventDefault();
+  e.stopPropagation();
+
+  const href = link.getAttribute("href");
+  if (!href) return;
+
+  const mode = getLinkOpenMode(e);
+
+  // 1) Anchor links — scroll to heading
+  if (href.startsWith("#")) {
+    scrollToAnchor(e.currentTarget, href);
+    return;
+  }
+
+  // 2) HTTP/HTTPS links — always open externally (any click)
+  if (href.startsWith("http://") || href.startsWith("https://")) {
+    window.electronAPI.openExternal(href);
+    return;
+  }
+
+  // 3) Relative .md links — mouse-button-aware navigation
+  if (href.endsWith(".md") || href.endsWith(".markdown")) {
+    openLinkedMdFile(href, mode);
+    return;
+  }
+
+  // 4) Other links
+  showToast("Link type not supported.", "info");
+};
+
+// Handle both left-click and middle-click on links
+appDiv.addEventListener("click", handleLinkEvent);
+appRight.addEventListener("click", handleLinkEvent);
+appDiv.addEventListener("auxclick", handleLinkEvent);
+appRight.addEventListener("auxclick", handleLinkEvent);
+
+// --- Navigation History (Back / Forward) ---
+const navHistory = {
+  stack: [],   // Array of { filePath, pane }
+  index: -1,
+  _navigating: false,
+
+  push(filePath) {
+    if (this._navigating || !filePath) return;
+    const pane = splitView && splitView.isOpen ? splitView.focusedPane : 'left';
+    if (this.index < this.stack.length - 1) {
+      this.stack = this.stack.slice(0, this.index + 1);
     }
+    const last = this.stack[this.stack.length - 1];
+    if (last && last.filePath === filePath && last.pane === pane) return;
+    this.stack.push({ filePath, pane });
+    if (this.stack.length > 50) { this.stack.shift(); this.index--; }
+    this.index = this.stack.length - 1;
+  },
+
+  canGoBack() { return this.index > 0; },
+  canGoForward() { return this.index < this.stack.length - 1; },
+
+  goBack() {
+    if (!this.canGoBack()) return null;
+    this.index--;
+    return this.stack[this.index];
+  },
+
+  goForward() {
+    if (!this.canGoForward()) return null;
+    this.index++;
+    return this.stack[this.index];
   }
 };
-appDiv.addEventListener("click", handleLinkClick);
-appRight.addEventListener("click", handleLinkClick);
+
+// Record current file on startup
+const initialPath = fileManager.getCurrentFilePath();
+if (initialPath) navHistory.push(initialPath);
+
+// Listen for navigation events (dispatched by worktree/link opener)
+window.addEventListener('navigation-event', (e) => {
+  if (e.detail && e.detail.filePath) {
+    navHistory.push(e.detail.filePath);
+    // Update worktree highlight (lightweight, no DOM rebuild)
+    if (window._refreshWorktreeFlyout) window._refreshWorktreeFlyout();
+  }
+});
+
+// Hook into existing onTabChange to record tab switches in nav history
+const prevTabChangeForNav = tabManager ? tabManager.onTabChange : null;
+if (tabManager) {
+  tabManager.onTabChange = (tab) => {
+    if (prevTabChangeForNav) prevTabChangeForNav(tab);
+    if (tab && tab.filePath) navHistory.push(tab.filePath);
+    // Refresh worktree flyout to update active file highlighting
+    if (window._refreshWorktreeFlyout) window._refreshWorktreeFlyout();
+  };
+}
+
+const navigateTo = async (entry) => {
+  if (!entry || !entry.filePath) return;
+  navHistory._navigating = true;
+  try {
+    if (window._openWorktreeFile) {
+      // Pass the pane from history so navigation goes to the correct panel
+      const targetPane = (splitView && splitView.isOpen) ? (entry.pane || null) : null;
+      await window._openWorktreeFile(entry.filePath, 'replace', targetPane);
+    }
+  } finally {
+    navHistory._navigating = false;
+  }
+};
+
+// Alt+Left / Alt+Right for back/forward
+window.addEventListener("keydown", (e) => {
+  if (e.altKey && e.key === "ArrowLeft") {
+    e.preventDefault();
+    const entry = navHistory.goBack();
+    if (entry) navigateTo(entry);
+  }
+  if (e.altKey && e.key === "ArrowRight") {
+    e.preventDefault();
+    const entry = navHistory.goForward();
+    if (entry) navigateTo(entry);
+  }
+}, { signal: globalSignal });
+
+// Mouse buttons 4/5 (back/forward)
+window.addEventListener("mouseup", (e) => {
+  if (e.button === 3) { // back
+    e.preventDefault();
+    const entry = navHistory.goBack();
+    if (entry) navigateTo(entry);
+  }
+  if (e.button === 4) { // forward
+    e.preventDefault();
+    const entry = navHistory.goForward();
+    if (entry) navigateTo(entry);
+  }
+}, { signal: globalSignal });
 
 // --- Close Confirmation for unsaved changes (2.1 + 3.6) ---
 window.electronAPI.onRequestClose(() => {

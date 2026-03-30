@@ -87,7 +87,9 @@ app.whenReady().then(async () => {
         favoriteFiles: [],
         theme: 'dark',
         zoomLevel: 100,
-        spellcheck: false
+        spellcheck: false,
+        worktreePath: null,
+        worktreeOpenMode: 'new-tab'
       }
     });
   } catch (e) {
@@ -346,6 +348,70 @@ function registerIpcHandlers() {
   ipcMain.handle('new-window', () => {
     createWindow();
     return true;
+  });
+
+  // --- Resolve path (for relative link navigation) ---
+  ipcMain.handle('resolve-path', (event, basePath, relativePath) => {
+    if (!basePath || !relativePath) return null;
+    const dir = path.dirname(basePath);
+    return path.resolve(dir, relativePath);
+  });
+
+  // --- Folder dialog (for worktree) ---
+  ipcMain.handle('show-folder-dialog', async (event, defaultPath) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    const opts = {
+      properties: ['openDirectory'],
+      title: 'Select Worktree Folder'
+    };
+    if (defaultPath) opts.defaultPath = defaultPath;
+    const result = await dialog.showOpenDialog(win, opts);
+    if (!result.canceled && result.filePaths.length > 0) {
+      return result.filePaths[0];
+    }
+    return null;
+  });
+
+  // --- Scan directory for .md files (for worktree) ---
+  ipcMain.handle('scan-directory-md', async (event, dirPath) => {
+    if (!dirPath || typeof dirPath !== 'string') return null;
+
+    async function scanDir(dir) {
+      let entries;
+      try {
+        entries = await fs.readdir(dir, { withFileTypes: true });
+      } catch {
+        return [];
+      }
+
+      const sorted = entries.sort((a, b) => {
+        if (a.isDirectory() && !b.isDirectory()) return -1;
+        if (!a.isDirectory() && b.isDirectory()) return 1;
+        return a.name.localeCompare(b.name);
+      });
+
+      const result = [];
+      for (const entry of sorted) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          if (entry.name.startsWith('.') || entry.name === 'node_modules') continue;
+          const children = await scanDir(fullPath);
+          if (children.length > 0) {
+            result.push({ type: 'directory', name: entry.name, path: fullPath, children });
+          }
+        } else if (entry.name.endsWith('.md') || entry.name.endsWith('.markdown')) {
+          result.push({ type: 'file', name: entry.name, path: fullPath });
+        }
+      }
+      return result;
+    }
+
+    try {
+      return await scanDir(dirPath);
+    } catch (e) {
+      console.error('Directory scan error:', e);
+      return null;
+    }
   });
 
   // Return the initial file path for the renderer to open on startup

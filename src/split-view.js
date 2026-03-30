@@ -429,11 +429,11 @@ export class SplitView {
       this._switchTabInPane(tab.id, pane);
     });
 
-    // Middle-click to close
+    // Middle-click to split to other pane
     tabEl.addEventListener('mousedown', (e) => {
       if (e.button === 1) {
         e.preventDefault();
-        this._closeTabInPane(tab.id, pane);
+        this.splitTabToOtherPane(tab.id, pane);
       }
     });
 
@@ -452,6 +452,11 @@ export class SplitView {
     });
 
     return tabEl;
+  }
+
+  /** Public: switch to a specific tab in a specific pane */
+  switchTabInPane(pane, tabId) {
+    this._switchTabInPane(tabId, pane);
   }
 
   _switchTabInPane(tabId, pane) {
@@ -572,6 +577,40 @@ export class SplitView {
     }
   }
 
+  /** Split a specific tab to the other pane (used by middle-click on tab) */
+  splitTabToOtherPane(tabId, fromPane) {
+    if (!this.isOpen) {
+      // Open split, show the clicked tab in the right pane
+      this._saveTabSnapshot(tabId);
+      this.rightTabIds = [tabId];
+      this.rightActiveTabId = tabId;
+      this.open();
+      return;
+    }
+
+    // Already split — add to other pane
+    const otherPane = fromPane === 'left' ? 'right' : 'left';
+    const otherTabIds = otherPane === 'left' ? this.leftTabIds : this.rightTabIds;
+
+    if (otherTabIds.includes(tabId)) {
+      // Already in both panes, just activate it in the other pane and focus
+      if (otherPane === 'left') this.leftActiveTabId = tabId;
+      else this.rightActiveTabId = tabId;
+      this.setFocusedPane(otherPane);
+    } else {
+      // Add to other pane
+      this._saveTabSnapshot(tabId);
+      if (otherPane === 'left') {
+        this.leftTabIds.push(tabId);
+        this.leftActiveTabId = tabId;
+      } else {
+        this.rightTabIds.push(tabId);
+        this.rightActiveTabId = tabId;
+      }
+      this.setFocusedPane(otherPane);
+    }
+  }
+
   _saveTabSnapshot(tabId) {
     if (!tabId) return;
     const tab = this.tabManager.tabs.find(t => t.id === tabId);
@@ -630,17 +669,18 @@ export class SplitView {
   }
 
   _syncLeftTabsFromManager() {
-    // Ensure all manager tabs are in the left pane
     const allIds = this.tabManager.tabs.map(t => t.id);
 
-    // Add new tabs
-    allIds.forEach(id => {
-      if (!this.leftTabIds.includes(id)) {
-        this.leftTabIds.push(id);
-      }
-    });
+    if (!this.isOpen) {
+      // When split is closed, left pane tracks ALL tabs (single-pane mode)
+      allIds.forEach(id => {
+        if (!this.leftTabIds.includes(id)) {
+          this.leftTabIds.push(id);
+        }
+      });
+    }
 
-    // Remove closed tabs
+    // Always remove closed tabs from both panes
     this.leftTabIds = this.leftTabIds.filter(id => allIds.includes(id));
 
     // Update active
